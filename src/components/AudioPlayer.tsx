@@ -407,7 +407,7 @@ export default function AudioPlayer({
                     type="text"
                     value={inpUrl}
                     onChange={(e) => setInpUrl(e.target.value)}
-                    placeholder="VD: https://server.com/nhac-cuoi.mp3"
+                    placeholder="VD: https://github.com/user/repo/blob/main/music.mp3 hoặc link Dropbox..."
                     className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-[#EDE6DB] outline-none focus:border-[#C5A059] bg-[#FFFDFB]"
                   />
                   <button
@@ -435,10 +435,35 @@ export default function AudioPlayer({
                 </div>
               )}
 
-              <p className="text-[9px] text-gray-400 leading-relaxed font-normal">
-                💡 <strong>Mẹo dùng Google Drive:</strong> Bạn cần cấu hình tệp nhạc ở chế độ <strong>"Bất kỳ ai có liên kết đều xem được" (Anyone with link can view)</strong>. 
-                Hệ thống sẽ tự động chuyển đổi định dạng link view bình thường sang luồng phát trực tiếp.
-              </p>
+              <div className="bg-[#FAF8F5] border border-[#F0ECE4] rounded-xl p-3 flex flex-col gap-2 text-[10px] text-gray-600 leading-relaxed font-normal">
+                <p className="font-semibold text-[#1E4638] border-b border-[#F0ECE4] pb-1">💡 Hướng dẫn chọn nguồn nhạc ổn định nhất:</p>
+                
+                <div>
+                  <span className="font-bold text-[#C5A059] block">1. Sử dụng GitHub (Khuyên dùng - Cực kỳ ổn định 100%):</span>
+                  <span className="text-gray-500">
+                    - Tạo kho lưu trữ (Repo) công khai trên GitHub, tải file <code className="bg-gray-100 px-1 rounded text-red-500">.mp3</code> lên.<br />
+                    - Dán đường link file nhạc dạng: <code className="bg-gray-100 px-1 rounded select-all break-all text-gray-700 font-mono">https://github.com/user/repo/blob/main/nhac.mp3</code><br />
+                    - Hệ thống sẽ tự động chuyển đổi thành luồng phát direct raw tốc độ siêu cao!
+                  </span>
+                </div>
+
+                <div>
+                  <span className="font-bold text-[#C5A059] block">2. Sử dụng Dropbox (Khuyên dùng - Rất dễ làm):</span>
+                  <span className="text-gray-500">
+                    - Tải file nhạc lên Dropbox cá nhân của bạn.<br />
+                    - Ấn chia sẻ tệp và sao chép liên kết (dạng <code className="text-gray-700 font-mono">...dropbox.com/s/.../song.mp3?dl=0</code>).<br />
+                    - Dán vào đây, hệ thống sẽ tự động cấu hình tính năng stream trực tiếp.
+                  </span>
+                </div>
+
+                <div>
+                  <span className="font-bold text-gray-500 block">3. Sử dụng Google Drive:</span>
+                  <span className="text-gray-500">
+                    - Cần đặt quyền tệp là <strong>"Bất kỳ ai có liên kết đều xem được/Anyone with link can view"</strong>.<br />
+                    - ⚠️ Do chính sách bảo mật robot nghiêm ngặt của Google, đôi khi luồng phát trực tiếp từ Drive có thể bị chặn hoặc chập chờn. Bạn nên ưu tiên dùng <strong>GitHub</strong> hoặc <strong>Dropbox</strong> ở trên nhé!
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 

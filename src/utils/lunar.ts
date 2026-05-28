@@ -138,6 +138,22 @@ export function cleanGoogleDriveAudioUrl(url: string): string {
     return trimmed;
   }
 
+  // Check for GitHub URLs
+  if (trimmed.includes('github.com') && trimmed.includes('/blob/')) {
+    return trimmed
+      .replace('github.com', 'raw.githubusercontent.com')
+      .replace('/blob/', '/');
+  }
+
+  // Check for Dropbox URLs
+  if (trimmed.includes('dropbox.com')) {
+    let dbUrl = trimmed;
+    // Strip existing dl or raw parameters to avoid conflicts
+    dbUrl = dbUrl.replace(/[?&]dl=[01]/g, '').replace(/[?&]raw=[01]/g, '');
+    dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'raw=1';
+    return dbUrl;
+  }
+
   let fileId = '';
 
   // Case 1: Check if it's already a relative proxy URL from a legacy database entry
