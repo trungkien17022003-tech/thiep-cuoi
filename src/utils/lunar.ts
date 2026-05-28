@@ -104,3 +104,29 @@ export function sortWeddingEvents<T extends { date: string; time: string }>(even
   });
 }
 
+export function cleanGoogleDriveUrl(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed.includes('drive.google.com') && !trimmed.includes('docs.google.com')) {
+    return trimmed;
+  }
+  let fileId = '';
+  // Match /file/d/{id}/...
+  const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) {
+    fileId = fileDMatch[1];
+  } else {
+    // Match id={id}
+    const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch && idMatch[1]) {
+      fileId = idMatch[1];
+    }
+  }
+
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+  }
+  return trimmed;
+}
+
+

@@ -10,7 +10,7 @@ import { EditEventModal, EditMapModal, EditPhotoModal } from './components/EditM
 import Envelope from './components/Envelope';
 import WeddingCard from './components/WeddingCard';
 import AudioPlayer from './components/AudioPlayer';
-import { sortWeddingEvents } from './utils/lunar';
+import { sortWeddingEvents, cleanGoogleDriveUrl } from './utils/lunar';
 
 const LOCAL_STORAGE_KEY = 'wedding_invite_organizer_data_v1';
 
@@ -121,6 +121,9 @@ export default function App() {
     if (field === 'events' && Array.isArray(value)) {
       updatedValue = sortWeddingEvents(value);
     }
+    if (field === 'photoUrl' && typeof value === 'string') {
+      updatedValue = cleanGoogleDriveUrl(value);
+    }
     const updated = { ...invite, [field]: updatedValue };
     // Auto sync Ceremony label to the corresponding Timeline Event Name if visible
     if (field === 'ceremonyType') {
@@ -166,11 +169,13 @@ export default function App() {
   };
 
   // Google map configuration save
-  const handleSaveMap = (newIframe: string, newDirectionLink: string) => {
+  const handleSaveMap = (newIframe: string, newDirectionLink: string, locationTitle: string, locationAddress: string) => {
     const updated = {
       ...invite,
       mapIframe: newIframe,
       mapDirectionLink: newDirectionLink,
+      locationTitle,
+      locationAddress,
     };
     handleUpdateInvite(updated);
     setIsMapModalOpen(false);
@@ -311,7 +316,12 @@ export default function App() {
       )}
 
       {/* Floating Ambient Instrumental Audio Player */}
-      <AudioPlayer autoPlayTrigger={isInvitationOpened} />
+      <AudioPlayer
+        autoPlayTrigger={isInvitationOpened}
+        audioUrl={invite.audioUrl}
+        onUpdateAudioUrl={(url) => handleUpdateField('audioUrl', url)}
+        isOrganizer={isOrganizer}
+      />
 
       {/* Shared Modular Modals Portal */}
       <EditEventModal
@@ -329,6 +339,8 @@ export default function App() {
         onClose={() => setIsMapModalOpen(false)}
         currentIframe={invite.mapIframe}
         currentDirectionLink={invite.mapDirectionLink}
+        currentLocationTitle={invite.locationTitle}
+        currentLocationAddress={invite.locationAddress}
         onSave={handleSaveMap}
       />
 

@@ -6,6 +6,7 @@
 import React from 'react';
 import { MapPin, Calendar, Clock, Edit2, Plus, Eye, EyeOff, Trash2, Heart, Share2 } from 'lucide-react';
 import { WeddingInvite, WeddingEvent, CeremonyType } from '../types';
+import { cleanGoogleDriveUrl } from '../utils/lunar';
 
 interface WeddingCardProps {
   invite: WeddingInvite;
@@ -175,7 +176,7 @@ export default function WeddingCard({
 
             {/* Main Image */}
             <img
-              src={invite.photoUrl}
+              src={cleanGoogleDriveUrl(invite.photoUrl || '')}
               alt={`Ảnh cưới ${invite.groom} & ${invite.bride}`}
               className="couple-photo w-full h-[340px] object-cover object-top rounded-xl shadow-lg border-4 border-white outline outline-1 outline-[#C5A059]/40"
               loading="lazy"
@@ -213,13 +214,33 @@ export default function WeddingCard({
               </button>
             )}
           </div>
-          <p className="location-main font-garamond text-xl md:text-2xl font-bold text-[#1E4638] tracking-wider mb-1.5">
-            NHÀ CÔ DÂU
-          </p>
-          <p className="location-detail text-sm font-medium text-gray-800 leading-relaxed px-1">
-            Cuối ngõ Nghè (Đi vào từ đường ĐH51), gần chợ Đại Quan,<br />
-            Xã Chí Minh, Tỉnh Hưng Yên
-          </p>
+          {isOrganizer ? (
+            <input
+              type="text"
+              value={invite.locationTitle !== undefined ? invite.locationTitle : 'NHÀ CÔ DÂU'}
+              onChange={(e) => onUpdateField('locationTitle', e.target.value)}
+              className="location-main font-garamond text-xl md:text-2xl font-bold text-[#1E4638] tracking-wider mb-1.5 text-center bg-transparent border-b border-dashed border-[#C5A059] focus:border-[#1E4638] outline-none max-w-[280px] w-full"
+              placeholder="Vị trí tổ chức (ví dụ: NHÀ CÔ DÂU)"
+            />
+          ) : (
+            <p className="location-main font-garamond text-xl md:text-2xl font-bold text-[#1E4638] tracking-wider mb-1.5">
+              {invite.locationTitle || 'NHÀ CÔ DÂU'}
+            </p>
+          )}
+
+          {isOrganizer ? (
+            <textarea
+              value={invite.locationAddress !== undefined ? invite.locationAddress : "Cuối ngõ Nghè (Đi vào từ đường ĐH51), gần chợ Đại Quan,\nXã Chí Minh, Tỉnh Hưng Yên"}
+              onChange={(e) => onUpdateField('locationAddress', e.target.value)}
+              rows={3}
+              className="location-detail text-sm font-medium text-gray-800 leading-relaxed px-1 text-center bg-transparent border border-dashed border-[#C5A059] focus:border-[#1E4638] outline-none w-full rounded-xl p-2 resize-none mt-1 font-sans"
+              placeholder="Địa chỉ chi tiết..."
+            />
+          ) : (
+            <p className="location-detail text-sm font-medium text-gray-800 leading-relaxed px-1 whitespace-pre-line">
+              {invite.locationAddress || "Cuối ngõ Nghè (Đi vào từ đường ĐH51), gần chợ Đại Quan,\nXã Chí Minh, Tỉnh Hưng Yên"}
+            </p>
+          )}
 
           {/* Embed Google maps using the loaded secure parameter src URL */}
           {invite.mapIframe && (

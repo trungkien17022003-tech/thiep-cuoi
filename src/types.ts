@@ -26,4 +26,7 @@ export interface WeddingInvite {
   mapIframe: string;
   mapDirectionLink: string;
   events: WeddingEvent[];
+  audioUrl?: string;
+  locationTitle?: string;
+  locationAddress?: string;
 }

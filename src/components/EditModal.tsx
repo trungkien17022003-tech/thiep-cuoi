@@ -12,6 +12,7 @@ import {
   canChiYear,
   formatSolarVN,
   formatLunarVN,
+  cleanGoogleDriveUrl,
 } from '../utils/lunar';
 
 // ==========================================
@@ -337,7 +338,9 @@ interface EditMapModalProps {
   onClose: () => void;
   currentIframe: string;
   currentDirectionLink: string;
-  onSave: (newIframe: string, newDirectionLink: string) => void;
+  currentLocationTitle?: string;
+  currentLocationAddress?: string;
+  onSave: (newIframe: string, newDirectionLink: string, locationTitle: string, locationAddress: string) => void;
 }
 
 export function EditMapModal({
@@ -345,15 +348,21 @@ export function EditMapModal({
   onClose,
   currentIframe,
   currentDirectionLink,
+  currentLocationTitle,
+  currentLocationAddress,
   onSave,
 }: EditMapModalProps) {
   const [iframeInput, setIframeInput] = useState('');
   const [directionLink, setDirectionLink] = useState('');
+  const [locationTitle, setLocationTitle] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
 
   useEffect(() => {
     setIframeInput(currentIframe);
     setDirectionLink(currentDirectionLink);
-  }, [currentIframe, currentDirectionLink, isOpen]);
+    setLocationTitle(currentLocationTitle || 'NHÀ CÔ DÂU');
+    setLocationAddress(currentLocationAddress || 'Cuối ngõ Nghè (Đi vào từ đường ĐH51), gần chợ Đại Quan,\nXã Chí Minh, Tỉnh Hưng Yên');
+  }, [currentIframe, currentDirectionLink, currentLocationTitle, currentLocationAddress, isOpen]);
 
   if (!isOpen) return null;
 
@@ -366,7 +375,7 @@ export function EditMapModal({
         cleanSrc = match[1];
       }
     }
-    onSave(cleanSrc, directionLink.trim());
+    onSave(cleanSrc, directionLink.trim(), locationTitle.trim(), locationAddress.trim());
   };
 
   return (
@@ -383,6 +392,34 @@ export function EditMapModal({
         </div>
 
         <div className="flex flex-col gap-4 mb-5">
+          {/* Location Title */}
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              Tiêu đề địa điểm (Ví dụ: NHÀ CÔ DÂU)
+            </label>
+            <input
+              type="text"
+              value={locationTitle}
+              onChange={(e) => setLocationTitle(e.target.value)}
+              placeholder="VD: NHÀ CÔ DÂU"
+              className="w-full px-3.5 py-2.5 rounded-lg border border-[#EDE6DB] focus:border-[#C5A059] outline-none text-xs bg-[#FFFDFB] font-semibold text-gray-800"
+            />
+          </div>
+
+          {/* Location Address */}
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              Địa chỉ chi tiết đầy đủ
+            </label>
+            <textarea
+              value={locationAddress}
+              onChange={(e) => setLocationAddress(e.target.value)}
+              placeholder="Nhập địa chỉ..."
+              rows={3}
+              className="w-full px-3.5 py-2.5 rounded-lg border border-[#EDE6DB] focus:border-[#C5A059] outline-none text-xs bg-[#FFFDFB]"
+            />
+          </div>
+
           {/* Iframe Input */}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -392,7 +429,7 @@ export function EditMapModal({
               value={iframeInput}
               onChange={(e) => setIframeInput(e.target.value)}
               placeholder='Dán đoạn mã <iframe> hoặc link nhúng src từ Google Maps...'
-              rows={4}
+              rows={3}
               className="w-full px-3.5 py-2.5 rounded-lg border border-[#EDE6DB] focus:border-[#C5A059] outline-none text-xs bg-[#FFFDFB] font-mono"
             />
             <p className="text-[10px] text-gray-400 leading-normal">
@@ -568,7 +605,7 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
             <input
               type="text"
               value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
+              onChange={(e) => setPhotoUrl(cleanGoogleDriveUrl(e.target.value))}
               placeholder="Dán link ảnh cưới dọc..."
               className="w-full px-3.5 py-2.5 rounded-lg border border-[#EDE6DB] focus:border-[#C5A059] outline-none text-xs bg-[#FFFDFB]"
             />
@@ -601,7 +638,7 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
 
         <div className="flex gap-2.5">
           <button
-            onClick={() => onSave(photoUrl)}
+            onClick={() => onSave(cleanGoogleDriveUrl(photoUrl))}
             className="flex-1 bg-[#1E4638] hover:bg-[#122C23] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
           >
             Lưu thay đổi
