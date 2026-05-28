@@ -146,56 +146,9 @@ export default function AudioPlayer({
       }
 
       const parsedUrl = cleanGoogleDriveAudioUrl(audioUrl);
-
-      // If the URL goes through our proxy, stream it as a local Blob via client fetch to guarantee 100% success on any domain
-      if (parsedUrl.includes('proxy-audio')) {
-        try {
-          if (isMounted) {
-            setAudioLoading(true);
-            setAudioError(null);
-          }
-          const response = await fetch(parsedUrl);
-          if (!response.ok) {
-            throw new Error(`HTTP status ${response.status}`);
-          }
-          const contentType = response.headers.get('content-type') || '';
-          if (contentType.includes('text/html')) {
-            throw new Error('Google Drive file is private or requires authorization.');
-          }
-
-          const blob = await response.blob();
-          const localBlobUrl = URL.createObjectURL(blob);
-
-          if (isMounted) {
-            // Revoke old blob URL
-            if (blobUrlRef.current) {
-              URL.revokeObjectURL(blobUrlRef.current);
-            }
-            blobUrlRef.current = localBlobUrl;
-            setResolvedSrc(localBlobUrl);
-            setAudioLoading(false);
-          } else {
-            URL.revokeObjectURL(localBlobUrl);
-          }
-        } catch (err: any) {
-          console.error('Error fetching audio blob from proxy, falling back to direct stream:', err);
-          if (isMounted) {
-            const idMatch = parsedUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (idMatch && idMatch[1]) {
-              const directUrl = `https://docs.google.com/uc?export=download&id=${idMatch[1]}`;
-              setResolvedSrc(directUrl);
-            } else {
-              setResolvedSrc(DEFAULT_TRACK);
-              setAudioError('Không thể tải nhạc từ Google Drive. Hãy đặt tệp Google Drive ở chế độ công khai "Bất kỳ ai có liên kết đều xem được" (Anyone with link can view) nhé!');
-            }
-            setAudioLoading(false);
-          }
-        }
-      } else {
-        if (isMounted) {
-          setResolvedSrc(parsedUrl);
-          setAudioLoading(false);
-        }
+      if (isMounted) {
+        setResolvedSrc(parsedUrl);
+        setAudioError(null);
       }
     };
     loadSource();
@@ -204,74 +157,33 @@ export default function AudioPlayer({
     };
   }, [audioUrl]);
 
-  // Create & mount audio player on resolved source change
+  // Synchronize playing & volume state with the HTML5 audio element
   useEffect(() => {
-    let shouldResume = isPlaying;
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.45;
+    audio.loop = true;
+
+    if (isPlaying) {
+      audio.play().catch((err) => {
+        console.log('Playback start was blocked by browser autoplay policy or failed:', err);
+        // Do not force isPlaying = false immediately to prevent visual flashing of the audio button
+      });
+    } else {
+      audio.pause();
     }
+  }, [isPlaying, resolvedSrc]);
 
-    setAudioError(null);
-
-    try {
-      const audio = new Audio(resolvedSrc);
-      audioRef.current = audio;
-      audio.loop = true;
-      audio.volume = 0.45;
-
-      audio.onerror = () => {
-        if (resolvedSrc.includes('google') || resolvedSrc.includes('usercontent') || resolvedSrc.includes('proxy-audio')) {
-          setAudioError('Không thể phát nhạc từ Google Drive. Vui lòng kiểm tra quyền chia sẻ của tệp (phải đặt ở chế độ "Bất kỳ ai có liên kết đều xem được/Anyone with link can view").');
-        } else {
-          setAudioError('Không lấy được tệp âm thanh từ liên kết này. Vui lòng đổi sang tệp .mp3 trực tuyến khác.');
-        }
-      };
-
-      if (shouldResume) {
-        audio.play()
-          .then(() => {
-            setIsPlaying(true);
-            setAudioError(null);
-          })
-          .catch((err) => {
-            console.log('Autoplay audio failed or was blocked on source transition', err);
-            setIsPlaying(false);
-          });
-      }
-    } catch (e) {
-      console.error('Audio creation error:', e);
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [resolvedSrc]);
-
-  // Handle outside layout autoplay triggers
+  // Handle outside layout autoplay triggers (e.g. envelope opens)
   useEffect(() => {
-    if (autoPlayTrigger && audioRef.current && !isPlaying) {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => {
-          console.log('Context trigger play blocked by browser sandbox policy.', err);
-        });
+    if (autoPlayTrigger && !isPlaying) {
+      setIsPlaying(true);
     }
   }, [autoPlayTrigger]);
 
   const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.error('Audio stream play triggered error:', err));
-    }
+    setIsPlaying(!isPlaying);
   };
 
   // Process selecting a curated preset track
@@ -334,6 +246,31 @@ export default function AudioPlayer({
 
   return (
     <div id="audio-panel-root" className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 text-left font-sans">
+      <audio
+        ref={audioRef}
+        src={resolvedSrc}
+        loop
+        preload="auto"
+        referrerPolicy="no-referrer"
+        onLoadStart={() => setAudioLoading(true)}
+        onCanPlay={() => setAudioLoading(false)}
+        onWaiting={() => setAudioLoading(true)}
+        onPlaying={() => {
+          setAudioLoading(false);
+          setAudioError(null);
+        }}
+        onError={() => {
+          setAudioLoading(false);
+          console.error("Audio load error for source:", resolvedSrc);
+          if (resolvedSrc && resolvedSrc !== DEFAULT_TRACK) {
+            if (resolvedSrc.includes('google') || resolvedSrc.includes('usercontent')) {
+              setAudioError('Không kiểm soát được tệp từ Google Drive. Vui lòng kiểm tra quyền chia sẻ tệp của bạn (Phải đặt thành "Bất kỳ ai có liên kết đều xem được/Anyone with link can view").');
+            } else {
+              setAudioError('Không lấy được tệp âm thanh từ liên kết này. Vui lòng đổi sang tệp .mp3 hoặc liên kết trực tuyến khác.');
+            }
+          }
+        }}
+      />
       {isOrganizer && isEditing && (
         <div className="bg-white/95 backdrop-blur border border-[#EDE6DB] shadow-2xl p-4 rounded-2xl w-[320px] max-w-[calc(100vw-40px)] animate-in fade-in slide-in-from-bottom-5 duration-200">
           <div className="flex justify-between items-center pb-2.5 border-b border-[#F0ECE4] mb-3">

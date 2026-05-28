@@ -86,16 +86,16 @@ async function startServer() {
       }
 
       // 3. Relay the response headers and status back to the client
-      res.status(response.status);
-
-      const contentLength = response.headers.get('content-length');
-      const contentRange = response.headers.get('content-range');
-
       res.setHeader('Content-Type', contentType);
       res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
+
+      res.status(response.status);
+
+      const contentLength = response.headers.get('content-length');
+      const contentRange = response.headers.get('content-range');
 
       if (contentLength) {
         res.setHeader('Content-Length', contentLength);
@@ -114,6 +114,9 @@ async function startServer() {
 
     } catch (error: any) {
       console.error('Audio proxy streaming error:', error);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
       res.status(500).send(`Error proxying Google Drive media stream: ${error.message}`);
     }
   });

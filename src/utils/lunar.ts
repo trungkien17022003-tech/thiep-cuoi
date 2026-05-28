@@ -160,7 +160,6 @@ export function cleanGoogleDriveAudioUrl(url: string): string {
   }
 
   if (fileId) {
-    // Determine if we are running in the direct AI Studio / Cloud Run preview workspace, or on an external site like Vercel
     const isLocalOrPre = typeof window !== 'undefined' && (
       window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1' ||
@@ -169,7 +168,7 @@ export function cleanGoogleDriveAudioUrl(url: string): string {
     if (isLocalOrPre) {
       return `/api/proxy-audio?id=${fileId}`;
     } else {
-      return `https://docs.google.com/uc?export=download&id=${fileId}`;
+      return `https://ais-pre-qobzc62527pna4ezkn6tr2-708016236775.asia-southeast1.run.app/api/proxy-audio?id=${fileId}`;
     }
   }
 
