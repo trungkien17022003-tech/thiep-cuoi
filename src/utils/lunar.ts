@@ -129,4 +129,29 @@ export function cleanGoogleDriveUrl(url: string): string {
   return trimmed;
 }
 
+export function cleanGoogleDriveAudioUrl(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed.includes('drive.google.com') && !trimmed.includes('docs.google.com')) {
+    return trimmed;
+  }
+  let fileId = '';
+  // Match /file/d/{id}/...
+  const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) {
+    fileId = fileDMatch[1];
+  } else {
+    // Match id={id}
+    const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch && idMatch[1]) {
+      fileId = idMatch[1];
+    }
+  }
+
+  if (fileId) {
+    return `/api/proxy-audio?id=${fileId}`;
+  }
+  return trimmed;
+}
+
 

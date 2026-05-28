@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Music, Upload, Link as LinkIcon, Check, X, Play, Pause, FileAudio } from 'lucide-react';
+import { cleanGoogleDriveAudioUrl } from '../utils/lunar';
 
 interface AudioPlayerProps {
   autoPlayTrigger?: boolean;
@@ -95,6 +96,7 @@ export default function AudioPlayer({
   const [uploadProgress, setUploadProgress] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,7 +119,7 @@ export default function AudioPlayer({
           setResolvedSrc(DEFAULT_TRACK);
         }
       } else {
-        setResolvedSrc(audioUrl);
+        setResolvedSrc(cleanGoogleDriveAudioUrl(audioUrl));
       }
     };
     loadSource();
@@ -131,14 +133,28 @@ export default function AudioPlayer({
       audioRef.current.pause();
     }
 
+    setAudioError(null);
+
     try {
-      audioRef.current = new Audio(resolvedSrc);
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.45;
+      const audio = new Audio(resolvedSrc);
+      audioRef.current = audio;
+      audio.loop = true;
+      audio.volume = 0.45;
+
+      audio.onerror = () => {
+        if (resolvedSrc.includes('google') || resolvedSrc.includes('usercontent') || resolvedSrc.includes('proxy-audio')) {
+          setAudioError('Không thể phát nhạc từ Google Drive. Vui lòng kiểm tra quyền chia sẻ của tệp (phải đặt ở chế độ "Bất kỳ ai có liên kết đều xem được/Anyone with link can view").');
+        } else {
+          setAudioError('Không lấy được tệp âm thanh từ liên kết này. Vui lòng đổi sang tệp .mp3 trực tuyến khác.');
+        }
+      };
 
       if (shouldResume) {
-        audioRef.current.play()
-          .then(() => setIsPlaying(true))
+        audio.play()
+          .then(() => {
+            setIsPlaying(true);
+            setAudioError(null);
+          })
           .catch((err) => {
             console.log('Autoplay audio failed or was blocked on source transition', err);
             setIsPlaying(false);
@@ -189,7 +205,7 @@ export default function AudioPlayer({
   // Process pasting online audio URL link
   const handleSaveLink = () => {
     if (inpUrl.trim() === '') return;
-    onUpdateAudioUrl?.(inpUrl.trim());
+    onUpdateAudioUrl?.(cleanGoogleDriveAudioUrl(inpUrl.trim()));
     setIsPlaying(true);
     setInpUrl('');
   };
@@ -394,9 +410,16 @@ export default function AudioPlayer({
                 </div>
               )}
 
-              <p className="text-[9px] text-gray-400 leading-relaxed italic">
-                * Mẹo: Bạn có thể dán link tệp nhạc .mp3 lấy từ Dropbox, Archive.org hoặc host nhạc của riêng bạn để phát đồng điệu với tất cả khách mời.
+              <p className="text-[9px] text-gray-400 leading-relaxed font-normal">
+                💡 <strong>Mẹo dùng Google Drive:</strong> Bạn cần cấu hình tệp nhạc ở chế độ <strong>"Bất kỳ ai có liên kết đều xem được" (Anyone with link can view)</strong>. 
+                Hệ thống sẽ tự động chuyển đổi định dạng link view bình thường sang luồng phát trực tiếp.
               </p>
+            </div>
+          )}
+
+          {audioError && (
+            <div className="mt-3 text-[10px] text-red-600 bg-red-50/70 border border-red-100 rounded-lg p-2.5 leading-relaxed font-normal">
+              ⚠️ <strong>Lỗi phát nhạc:</strong> {audioError}
             </div>
           )}
         </div>
