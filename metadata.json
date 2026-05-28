@@ -1,0 +1,6 @@
+{
+  "name": "Thiệp Cưới Nhật Trinh",
+  "description": "Thiệp mời đám cưới trực tuyến tương tác 3D cho chú rể Vũ Nhật và cô dâu Kiều Trinh, tích hợp bản đồ và chuyển đổi ngày âm dương.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

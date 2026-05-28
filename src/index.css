@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom design styles for wedding envelope and typography */
+
+.font-garamond {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-dancing {
+  font-family: 'Dancing Script', cursive;
+}
+
+/* 3D Envelope Scene */
+.scene {
+  perspective: 1400px;
+  z-index: 2;
+}
+
+/* Flap wrapper handling front and back with backface visibility */
+.env-flap-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 155px;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  transition: transform 0.95s cubic-bezier(0.33, 1, 0.68, 1);
+  z-index: 20;
+}
+
+.env-flap-wrap.flap-opened {
+  transform: rotateX(-178deg);
+}
+
+.env-flap-front {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.env-flap-front::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-top: 155px solid #9F1239;
+  border-left: 200px solid transparent;
+  border-right: 200px solid transparent;
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.25));
+}
+
+.env-flap-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  transform: rotateX(180deg);
+  overflow: hidden;
+}
+
+.env-flap-back::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-top: 155px solid #F3F0E9;
+  border-left: 200px solid transparent;
+  border-right: 200px solid transparent;
+}
+
+
+/* Left flap */
+.env-left-flap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-left: 200px solid #881337;
+  border-top: 135px solid transparent;
+  border-bottom: 135px solid transparent;
+  border-radius: 10px 0 0 10px;
+  z-index: 2;
+}
+
+/* Right flap */
+.env-right-flap {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-right: 200px solid #881337;
+  border-top: 135px solid transparent;
+  border-bottom: 135px solid transparent;
+  border-radius: 0 10px 10px 0;
+  z-index: 2;
+}
+
+/* Bottom flap */
+.env-bottom-flap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-bottom: 130px solid #4C0519;
+  border-left: 200px solid transparent;
+  border-right: 200px solid transparent;
+  border-radius: 0 0 10px 10px;
+  z-index: 3;
+}
+
+/* Mini card in envelope clip zones */
+.mini-card {
+  position: absolute;
+  bottom: -230px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 330px;
+  height: 215px;
+  background: linear-gradient(160deg, #FDFCF9 0%, #F7F2E8 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  z-index: 4;
+  overflow: hidden;
+  transition: bottom 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.mini-card::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(197, 160, 89, 0.22);
+  border-radius: 3px;
+}
+
+.mini-card.card-rising {
+  bottom: 8px;
+}
+
+/* Sparkle stars floating */
+.sparkle {
+  position: absolute;
+  color: #C5A059;
+  opacity: 0;
+  animation: floatSparkle 4.5s infinite ease-in-out;
+}
+
+.s1 { top: 18%; left: 10%; font-size: 22px; animation-delay: 0s; }
+.s2 { top: 12%; right: 13%; font-size: 16px; animation-delay: 1.2s; }
+.s3 { bottom: 22%; left: 18%; font-size: 20px; animation-delay: 2.3s; }
+.s4 { bottom: 15%; right: 8%; font-size: 14px; animation-delay: 0.7s; }
+.s5 { top: 48%; right: 22%; font-size: 18px; animation-delay: 1.8s; }
+.s6 { top: 35%; left: 5%; font-size: 18px; animation-delay: 3.1s; }
+
+@keyframes floatSparkle {
+  0% { transform: translateY(18px) scale(0.5) rotate(0deg); opacity: 0; }
+  40% { opacity: 0.85; }
+  100% { transform: translateY(-45px) scale(1.2) rotate(25deg); opacity: 0; }
+}
+
+/* Wax seal styling */
+.seal3d {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 76px;
+  height: 76px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.55s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: sealPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes sealPulse {
+  0%, 100% { filter: drop-shadow(0 6px 16px rgba(197, 160, 89, 0.5)); transform: translate(-50%, -50%) scale(1); }
+  50% { filter: drop-shadow(0 10px 24px rgba(197, 160, 89, 0.85)); transform: translate(-50%, -50%) scale(1.07); }
+}
+
+.seal3d:hover {
+  animation: none;
+  transform: translate(-50%, -50%) scale(1.1) !important;
+  filter: drop-shadow(0 12px 28px rgba(197, 160, 89, 0.9));
+}
+
+.seal-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    #F5DE9E 0deg, #C5A059 60deg, #F5DE9E 120deg,
+    #C5A059 180deg, #F5DE9E 240deg, #C5A059 300deg, #F5DE9E 360deg
+  );
+  box-shadow: 0 8px 22px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.35);
+}
+
+.seal-ring::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #F6DF9E, #B8922A);
+}
+
+.seal3d.seal-open {
+  animation: sealBreak 0.55s ease forwards !important;
+}
+
+@keyframes sealBreak {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  40% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.3) rotate(8deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-20deg); }
+}
+
+/* Animations & transitions */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+/* Responsive Envelope dimensions */
+@media (max-width: 480px) {
+  .envelope3d { width: 310px; height: 210px; }
+  .env-flap-wrap { height: 120px; }
+  .env-flap-front::after, .env-flap-back::after {
+    border-top-width: 120px;
+    border-left-width: 155px;
+    border-right-width: 155px;
+  }
+  .env-left-flap { border-left-width: 155px; border-top-width: 105px; border-bottom-width: 105px; }
+  .env-right-flap { border-right-width: 155px; border-top-width: 105px; border-bottom-width: 105px; }
+  .env-bottom-flap { border-bottom-width: 100px; border-left-width: 155px; border-right-width: 155px; }
+  .mini-card { width: 248px; height: 170px; bottom: -185px; }
+  .mini-card.card-rising { bottom: 6px; }
+  .seal3d { width: 65px; height: 65px; }
+}
+
+@media (max-width: 360px) {
+  .envelope3d { width: 270px; height: 185px; }
+  .env-flap-wrap { height: 105px; }
+  .env-flap-front::after, .env-flap-back::after {
+    border-top-width: 105px;
+    border-left-width: 135px;
+    border-right-width: 135px;
+  }
+  .env-left-flap { border-left-width: 135px; border-top-width: 92px; border-bottom-width: 92px; }
+  .env-right-flap { border-right-width: 135px; border-top-width: 92px; border-bottom-width: 92px; }
+  .env-bottom-flap { border-bottom-width: 90px; border-left-width: 135px; border-right-width: 135px; }
+  .mini-card { width: 212px; height: 150px; bottom: -160px; }
+  .mini-card.card-rising { bottom: 5px; }
+}
