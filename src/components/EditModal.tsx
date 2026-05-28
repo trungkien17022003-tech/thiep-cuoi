@@ -149,7 +149,7 @@ export function EditEventModal({ isOpen, onClose, eventToEdit, onSave }: EditEve
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-[400px] max-h-[92vh] overflow-y-auto antialiased animate-in fade-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center border-b border-[#E5E1D8] pb-3 mb-4">
-          <h3 className="font-garamond text-xl font-bold text-[#E11D48] flex items-center gap-2">
+          <h3 className="font-garamond text-xl font-bold text-[#1E4638] flex items-center gap-2">
             <Calendar className="w-5 h-5" />
             {eventToEdit ? 'Chỉnh sửa bữa / lễ' : 'Thêm bữa / lễ mới'}
           </h3>
@@ -249,9 +249,9 @@ export function EditEventModal({ isOpen, onClose, eventToEdit, onSave }: EditEve
                   id="leap-chk"
                   checked={lunarLeap}
                   onChange={(e) => handleLunarChange(lunarDay, lunarMonth, lunarYear, e.target.checked)}
-                  className="w-3.5 h-3.5 accent-[#E11D48]"
+                  className="w-3.5 h-3.5 accent-[#1E4638]"
                 />
-                <label htmlFor="leap-chk" className="text-xs font-semibold text-[#E11D48] cursor-pointer">
+                <label htmlFor="leap-chk" className="text-xs font-semibold text-[#1E4638] cursor-pointer">
                   Tháng nhuận
                 </label>
               </div>
@@ -313,7 +313,7 @@ export function EditEventModal({ isOpen, onClose, eventToEdit, onSave }: EditEve
                 visible: eventToEdit ? eventToEdit.visible : true,
               });
             }}
-            className="flex-1 bg-[#E11D48] hover:bg-[#BE123C] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
+            className="flex-1 bg-[#1E4638] hover:bg-[#122C23] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
           >
             Lưu bữa lễ
           </button>
@@ -373,7 +373,7 @@ export function EditMapModal({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-[420px] animate-in fade-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center border-b border-[#E5E1D8] pb-3 mb-4">
-          <h3 className="font-garamond text-xl font-bold text-[#E11D48] flex items-center gap-2">
+          <h3 className="font-garamond text-xl font-bold text-[#1E4638] flex items-center gap-2">
             <MapPin className="w-5 h-5" />
             Cấu hình Bản đồ chỉ đường
           </h3>
@@ -421,7 +421,7 @@ export function EditMapModal({
         <div className="flex gap-2.5">
           <button
             onClick={handleSave}
-            className="flex-1 bg-[#E11D48] hover:bg-[#BE123C] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
+            className="flex-1 bg-[#1E4638] hover:bg-[#122C23] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
           >
             Lưu cấu hình
           </button>
@@ -524,7 +524,7 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-[420px] max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200 font-sans">
         <div className="flex justify-between items-center border-b border-[#E5E1D8] pb-3 mb-4">
-          <h3 className="font-garamond text-xl font-bold text-[#E11D48] flex items-center gap-2">
+          <h3 className="font-garamond text-xl font-bold text-[#1E4638] flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
             Thay đổi Ảnh Cô dâu & Chú rể
           </h3>
@@ -589,7 +589,7 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
                 >
                   <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
                   {photoUrl === preset.url && (
-                    <div className="absolute inset-0 bg-[#E11D48]/50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#1E4638]/70 flex items-center justify-center">
                       <Check className="w-4 h-4 text-white font-bold" />
                     </div>
                   )}
@@ -602,7 +602,7 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
         <div className="flex gap-2.5">
           <button
             onClick={() => onSave(photoUrl)}
-            className="flex-1 bg-[#E11D48] hover:bg-[#BE123C] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
+            className="flex-1 bg-[#1E4638] hover:bg-[#122C23] text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md transition-colors"
           >
             Lưu thay đổi
           </button>

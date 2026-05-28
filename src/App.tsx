@@ -185,14 +185,27 @@ export default function App() {
   // Serialize parameters into shareable deep link copy
   const handleShareLink = () => {
     try {
-      const serializedString = btoa(unescape(encodeURIComponent(JSON.stringify(invite))));
+      const inviteToShare = { ...invite };
+      let hadBase64Photo = false;
+      if (inviteToShare.photoUrl && inviteToShare.photoUrl.startsWith('data:')) {
+        hadBase64Photo = true;
+        inviteToShare.photoUrl = DEFAULT_INVITE.photoUrl; // Default fine-art couple image fallback
+      }
+
+      const serializedString = btoa(unescape(encodeURIComponent(JSON.stringify(inviteToShare))));
       const shareUrl = new URL(window.location.origin + window.location.pathname);
+      // Remove admin param if present
+      shareUrl.searchParams.delete('admin');
       shareUrl.searchParams.set('invite', serializedString);
       shareUrl.searchParams.set('name', guestName.trim() || 'Khách Quý');
 
       navigator.clipboard.writeText(shareUrl.toString())
         .then(() => {
-          showToast('✅ Đã sao chép Link Thiết Kế! Hoàn tất dán và gửi cho bạn bè của bạn.');
+          if (hadBase64Photo) {
+            showToast('✅ Đã sao chép! Lưu ý: Do ảnh tự tải lên dung lượng cực lớn, link gửi sẽ dùng ảnh cưới mẫu. Để hiện ảnh thật của bạn trên mọi thiết bị, vui lòng "Dán Link ảnh"!');
+          } else {
+            showToast('✅ Đã sao chép Link thiết kế! Gửi liên kết này cho bạn bè của bạn.');
+          }
         })
         .catch(() => {
           prompt('Dán và copy thủ công liên kết tùy chỉnh của bạn:', shareUrl.toString());
