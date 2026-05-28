@@ -153,7 +153,7 @@ export default function WeddingCard({
             {/* Main Image */}
             <img
               src={invite.photoUrl}
-              alt="Ảnh cưới Vũ Nhật & Kiều Trinh"
+              alt={`Ảnh cưới ${invite.groom} & ${invite.bride}`}
               className="couple-photo w-full h-[340px] object-cover object-top rounded-xl shadow-lg border-4 border-white outline outline-1 outline-[#C5A059]/40"
               loading="lazy"
             />
