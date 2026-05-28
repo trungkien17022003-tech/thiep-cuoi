@@ -76,3 +76,31 @@ export function parseSolarString(dateStr: string): { day: number; month: number;
     year: parseInt(match[3], 10),
   };
 }
+
+export function sortWeddingEvents<T extends { date: string; time: string }>(events: T[]): T[] {
+  return [...events].sort((a, b) => {
+    const parseA = parseSolarString(a.date);
+    const parseB = parseSolarString(b.date);
+
+    let timeA = 0;
+    let timeB = 0;
+
+    if (parseA) {
+      timeA = new Date(parseA.year, parseA.month - 1, parseA.day).getTime();
+    }
+    if (parseB) {
+      timeB = new Date(parseB.year, parseB.month - 1, parseB.day).getTime();
+    }
+
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+
+    // Fall back to comparing times HH:MM
+    const [hA, mA] = (a.time || '00:00').split(':').map((s) => parseInt(s, 10) || 0);
+    const [hB, mB] = (b.time || '00:00').split(':').map((s) => parseInt(s, 10) || 0);
+    if (hA !== hB) return hA - hB;
+    return mA - mB;
+  });
+}
+

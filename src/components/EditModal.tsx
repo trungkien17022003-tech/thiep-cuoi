@@ -450,12 +450,17 @@ interface EditPhotoModalProps {
 export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: EditPhotoModalProps) {
   const [photoUrl, setPhotoUrl] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPhotoUrl(currentPhotoUrl);
   }, [currentPhotoUrl, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleContainerClick = () => {
+    fileInputRef.current?.click();
+  };
 
   // Handle local image file upload converting it to stable Base64 string
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -467,15 +472,49 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Kích thước ảnh quá lớn! Vui lòng chọn ảnh < 2MB để lưu trữ tốt nhất.');
+    if (file.size > 15 * 1024 * 1024) {
+      alert('Kích thước ảnh quá lớn! Kích thước tối đa cho phép là 15MB.');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
-        setPhotoUrl(reader.result);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Downscale modern high-res mobile camera photos
+          const MAX_WIDTH = 900;
+          const MAX_HEIGHT = 1200;
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            if (width / height > MAX_WIDTH / MAX_HEIGHT) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            } else {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Compress to JPEG with 0.8 quality
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            setPhotoUrl(compressedBase64);
+          } else {
+            setPhotoUrl(reader.result as string);
+          }
+        };
+        img.onerror = () => {
+          setPhotoUrl(reader.result as string);
+        };
+        img.src = reader.result;
       }
     };
     reader.readAsDataURL(file);
@@ -500,19 +539,23 @@ export function EditPhotoModal({ isOpen, onClose, currentPhotoUrl, onSave }: Edi
             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
               Tải ảnh từ máy tính / Điện thoại
             </label>
-            <div className="relative border-2 border-dashed border-[#EDE6DB] hover:border-[#C5A059] rounded-xl p-5 flex flex-col items-center justify-center bg-[#FFFDFB] transition-colors group cursor-pointer text-center">
+            <div 
+              onClick={handleContainerClick}
+              className="relative border-2 border-dashed border-[#EDE6DB] hover:border-[#C5A059] rounded-xl p-5 flex flex-col items-center justify-center bg-[#FFFDFB] transition-colors group cursor-pointer text-center"
+            >
               <Upload className="w-8 h-8 text-gray-400 group-hover:text-[#C5A059] transition-colors mb-2" />
               <p className="text-xs text-gray-500 font-medium mb-1">
                 Kéo ảnh vào đây hoặc bấm để chọn
               </p>
               <p className="text-[10px] text-gray-400">
-                Chấp nhận PNG, JPG, GIF (Tối đa 2MB)
+                Hỗ trợ ảnh chụp điện thoại (Tối đa 15MB)
               </p>
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="hidden"
               />
             </div>
           </div>

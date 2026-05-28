@@ -51,7 +51,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  border-top: 155px solid #9F1239;
+  border-top: 155px solid #1C5241;
   border-left: 200px solid transparent;
   border-right: 200px solid transparent;
   filter: drop-shadow(0 5px 10px rgba(0,0,0,0.25));
@@ -81,7 +81,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  border-left: 200px solid #881337;
+  border-left: 200px solid #174335;
   border-top: 135px solid transparent;
   border-bottom: 135px solid transparent;
   border-radius: 10px 0 0 10px;
@@ -93,7 +93,7 @@
   position: absolute;
   right: 0;
   top: 0;
-  border-right: 200px solid #881337;
+  border-right: 200px solid #174335;
   border-top: 135px solid transparent;
   border-bottom: 135px solid transparent;
   border-radius: 0 10px 10px 0;
@@ -105,7 +105,7 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  border-bottom: 130px solid #4C0519;
+  border-bottom: 130px solid #0F2F25;
   border-left: 200px solid transparent;
   border-right: 200px solid transparent;
   border-radius: 0 0 10px 10px;

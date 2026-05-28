@@ -10,6 +10,7 @@ import { EditEventModal, EditMapModal, EditPhotoModal } from './components/EditM
 import Envelope from './components/Envelope';
 import WeddingCard from './components/WeddingCard';
 import AudioPlayer from './components/AudioPlayer';
+import { sortWeddingEvents } from './utils/lunar';
 
 const LOCAL_STORAGE_KEY = 'wedding_invite_organizer_data_v1';
 
@@ -77,6 +78,9 @@ export default function App() {
         const decodedString = decodeURIComponent(escape(atob(customInviteParam)));
         const parsedInvite = JSON.parse(decodedString) as WeddingInvite;
         if (parsedInvite && parsedInvite.groom) {
+          if (parsedInvite.events) {
+            parsedInvite.events = sortWeddingEvents(parsedInvite.events);
+          }
           setInvite(parsedInvite);
           return; // Skip loading local drafts if full custom invite is set in URL
         }
@@ -92,6 +96,9 @@ export default function App() {
         try {
           const parsed = JSON.parse(stored) as WeddingInvite;
           if (parsed && parsed.groom) {
+            if (parsed.events) {
+              parsed.events = sortWeddingEvents(parsed.events);
+            }
             setInvite(parsed);
           }
         } catch {
@@ -110,7 +117,11 @@ export default function App() {
   };
 
   const handleUpdateField = (field: keyof WeddingInvite, value: any) => {
-    const updated = { ...invite, [field]: value };
+    let updatedValue = value;
+    if (field === 'events' && Array.isArray(value)) {
+      updatedValue = sortWeddingEvents(value);
+    }
+    const updated = { ...invite, [field]: updatedValue };
     // Auto sync Ceremony label to the corresponding Timeline Event Name if visible
     if (field === 'ceremonyType') {
       const type = value as CeremonyType;
@@ -123,6 +134,7 @@ export default function App() {
         }
         return evt;
       });
+      updated.events = sortWeddingEvents(updated.events);
     }
     handleUpdateInvite(updated);
   };
@@ -176,11 +188,11 @@ export default function App() {
       const serializedString = btoa(unescape(encodeURIComponent(JSON.stringify(invite))));
       const shareUrl = new URL(window.location.origin + window.location.pathname);
       shareUrl.searchParams.set('invite', serializedString);
-      shareUrl.searchParams.set('name', 'Quý Khách'); // Default template helper for invitees
+      shareUrl.searchParams.set('name', guestName.trim() || 'Khách Quý');
 
       navigator.clipboard.writeText(shareUrl.toString())
         .then(() => {
-          showToast('✅ Đã sao chép Link Thiết Kế! Thừa kế dán và chia sẻ cho bạn bè.');
+          showToast('✅ Đã sao chép Link Thiết Kế! Hoàn tất dán và gửi cho bạn bè của bạn.');
         })
         .catch(() => {
           prompt('Dán và copy thủ công liên kết tùy chỉnh của bạn:', shareUrl.toString());
@@ -201,7 +213,7 @@ export default function App() {
       {/* Toast Notification */}
       <div
         id="toast-msg"
-        className={`toast-notification z-50 fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-rose-900 text-white font-semibold text-xs md:text-sm shadow-xl transition-all duration-300 ${
+        className={`toast-notification z-50 fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-[#1E4638] text-white font-semibold text-xs md:text-sm shadow-xl transition-all duration-300 ${
           toastMessage ? 'show translate-y-0 opacity-100' : '-translate-y-16 opacity-0 pointer-events-none'
         }`}
       >
@@ -211,23 +223,38 @@ export default function App() {
       {/* Organizer Designer Top Header Instruction bar */}
       {isOrganizer && (
         <div id="organizer-designer-bar" className="w-full max-w-[500px] mb-4 bg-white/90 backdrop-blur border border-[#C5A059] rounded-2xl p-4 shadow-lg text-left antialiased">
-          <div className="flex items-center gap-2 text-[#E11D48] font-bold text-sm mb-1">
+          <div className="flex items-center gap-2 text-[#1E4638] font-bold text-sm mb-1">
             <Sparkles className="w-4 h-4 text-[#C5A059] fill-[#C5A059]" />
             Chế độ Thiết kế thiệp cưới
           </div>
           <p className="text-xs text-gray-500 leading-relaxed mb-3">
-            Hệ thống đang hoạt động ở chế độ chỉnh sửa. Bạn có thể sửa trực tiếp tên, họ hàng, bản đồ, chương trình âm dương lịch. Sau đó, bấm <strong>Tạo Link Gửi Bạn Bè</strong> để copy link thiết bị hoàn thiện gửi qua Zalo/Messenger!
+            Hệ thống đang hoạt động ở chế độ chỉnh sửa. Bạn có thể sửa trực tiếp tên, họ hàng, bản đồ, chương trình âm dương lịch. Sau đó, bấm <strong>Tạo Link Gửi Bạn Bè</strong> để sao chép liên kết hoàn chỉnh!
           </p>
+
+          <div className="flex flex-col gap-1.5 mb-4 p-3.5 bg-[#F0F7F4] rounded-xl border border-[#C5A059]/40 text-left">
+            <label className="text-[10px] font-bold text-[#1E4638] uppercase tracking-wider block">
+              ✍️ Nhập tên khách mời (Để tạo link gửi bạn bè):
+            </label>
+            <input
+              type="text"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder="VD: Anh Thiên, Gia đình Anh Chị..."
+              className="w-full px-3 py-2 rounded-lg border border-[#EDE6DB] focus:border-[#C5A059] outline-none text-xs bg-white font-medium text-gray-800 shadow-sm"
+            />
+          </div>
+
           <div className="flex gap-2">
             <button
               onClick={handleShareLink}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#E11D48] hover:bg-[#BE123C] text-white shadow transition-transform hover:-translate-y-0.5"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#1E4638] hover:bg-[#122C23] text-white shadow transition-transform hover:-translate-y-0.5"
             >
-              📤 Tạo Link Thiết Kế
+              📤 Tạo Link Gửi Bạn Bè
             </button>
             <button
               onClick={() => {
                 setInvite(DEFAULT_INVITE);
+                setGuestName('Khách Quý');
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
                 showToast('✨ Đã khôi phục thiết kế thiệp gốc!');
               }}
@@ -248,11 +275,15 @@ export default function App() {
           groomShort={invite.groomShort}
           brideShort={invite.brideShort}
           onOpen={() => setIsInvitationOpened(true)}
+          isOrganizer={isOrganizer}
+          onUpdateGuestName={setGuestName}
         />
       ) : (
         <WeddingCard
           invite={invite}
           isOrganizer={isOrganizer}
+          guestName={guestName}
+          onUpdateGuestName={setGuestName}
           onUpdateField={handleUpdateField}
           onOpenEventModal={(evt) => {
             setEventToEdit(evt);

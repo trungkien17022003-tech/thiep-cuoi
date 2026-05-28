@@ -10,6 +10,8 @@ import { WeddingInvite, WeddingEvent, CeremonyType } from '../types';
 interface WeddingCardProps {
   invite: WeddingInvite;
   isOrganizer: boolean;
+  guestName: string;
+  onUpdateGuestName: (name: string) => void;
   onUpdateField: (field: keyof WeddingInvite, value: any) => void;
   onOpenEventModal: (event: WeddingEvent | null) => void;
   onDeleteEvent: (id: string) => void;
@@ -22,6 +24,8 @@ interface WeddingCardProps {
 export default function WeddingCard({
   invite,
   isOrganizer,
+  guestName,
+  onUpdateGuestName,
   onUpdateField,
   onOpenEventModal,
   onDeleteEvent,
@@ -32,9 +36,18 @@ export default function WeddingCard({
 }: WeddingCardProps) {
   const visibleEvents = invite.events.filter((e) => e.visible !== false);
 
-  // Computes short names based on updated full names
-  const groomLast = invite.groomShort || invite.groom.trim().split(' ').pop() || 'Nhật';
-  const brideLast = invite.brideShort || invite.bride.trim().split(' ').pop() || 'Trinh';
+  // Extract last 2 words of a name (middle name + first name)
+  const getTwoWords = (name: string, fallback: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return parts.slice(-2).join(' ');
+    }
+    return parts.pop() || fallback;
+  };
+
+  // Computes short names based on updated full names with 2-word format
+  const groomLast = invite.groomShort || getTwoWords(invite.groom, 'Văn Nhật');
+  const brideLast = invite.brideShort || getTwoWords(invite.bride, 'Kiều Trinh');
 
   return (
     <div id="main-card" className="w-full max-w-[500px] animate-in fade-in slide-in-from-bottom-5 duration-500 font-sans">
@@ -44,15 +57,15 @@ export default function WeddingCard({
 
         {/* Vintage Top Ornaments */}
         <svg className="decor-top-left absolute top-[-5px] left-[-5px] w-28 md:w-32 opacity-85 pointer-events-none z-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 0C30 10 60 5 80 30C50 35 20 20 0 0Z" fill="#E11D48" opacity="0.12"/>
-          <path d="M0 20C15 35 40 30 55 50C35 50 15 40 0 20Z" fill="#E11D48" opacity="0.08"/>
+          <path d="M0 0C30 10 60 5 80 30C50 35 20 20 0 0Z" fill="#1E4638" opacity="0.12"/>
+          <path d="M0 20C15 35 40 30 55 50C35 50 15 40 0 20Z" fill="#1E4638" opacity="0.08"/>
           <circle cx="15" cy="40" r="2.5" fill="#C5A059" opacity="0.4"/>
           <circle cx="45" cy="20" r="2" fill="#C5A059" opacity="0.4"/>
         </svg>
 
         <svg className="decor-top-right absolute top-[-5px] right-[-5px] w-28 md:w-32 opacity-85 pointer-events-none z-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M100 0C70 10 40 5 20 30C50 35 80 20 100 0Z" fill="#E11D48" opacity="0.12"/>
-          <path d="M100 20C85 35 60 30 45 50C65 50 85 40 100 20Z" fill="#E11D48" opacity="0.08"/>
+          <path d="M100 0C70 10 40 5 20 30C50 35 80 20 100 0Z" fill="#1E4638" opacity="0.12"/>
+          <path d="M100 20C85 35 60 30 45 50C65 50 85 40 100 20Z" fill="#1E4638" opacity="0.08"/>
           <circle cx="85" cy="40" r="2.5" fill="#C5A059" opacity="0.4"/>
           <circle cx="55" cy="20" r="2" fill="#C5A059" opacity="0.4"/>
         </svg>
@@ -62,26 +75,36 @@ export default function WeddingCard({
         </p>
 
         {/* Guest names block (clickable to dynamically modify for quick generation) */}
-        <div className="relative inline-block group mb-3">
-          <div className="guest-box font-dancing text-4xl md:text-5xl font-bold text-[#E11D48] pb-1.5 border-b-2 border-dashed border-[#C5A059] px-4 select-none">
-            {invite.groomShort && invite.brideShort ? 'Quý Khách' : 'Khách Quý'}
-          </div>
-          {isOrganizer && (
-            <p className="text-[10px] text-gray-400 italic mt-0.5">
-              (Xem trước thiệp dưới góc độ khách mời)
-            </p>
+        <div className="relative inline-block group mb-3 w-full px-4">
+          {isOrganizer ? (
+            <div className="flex flex-col items-center">
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => onUpdateGuestName(e.target.value)}
+                placeholder="Nhập tên khách..."
+                className="guest-box font-dancing text-3xl md:text-4xl font-bold text-[#1E4638] pb-1 border-b border-dashed border-[#C5A059] bg-transparent outline-none text-center max-w-[280px] w-full"
+              />
+              <p className="text-[10px] text-gray-400 italic mt-1 pb-1">
+                (Thiết kế & sửa tên khách mời trực tiếp tại đây)
+              </p>
+            </div>
+          ) : (
+            <div className="guest-box font-dancing text-4xl md:text-5xl font-bold text-[#1E4638] pb-1.5 border-b-2 border-dashed border-[#C5A059] px-4 select-none">
+              {guestName || 'Khách Quý'}
+            </div>
           )}
         </div>
 
         {/* Ceremony Type Selector toggle (restricted only to wedding organizers) */}
         {isOrganizer && (
           <div id="ceremony-toggle-wrapper" className="my-3 flex justify-center animate-in fade-in duration-200">
-            <div className="ceremony-toggle flex bg-[#FFF1F2] border border-[#E5E1D8] rounded-full p-1 gap-1">
+            <div className="ceremony-toggle flex bg-[#F0F7F4] border border-[#E5E1D8] rounded-full p-1 gap-1">
               <button
                 onClick={() => onUpdateField('ceremonyType', 'vu-quy')}
                 className={`ctog-btn px-4.5 py-1.5 rounded-full text-xs font-semibold select-none transition-all ${
                   invite.ceremonyType === 'vu-quy'
-                    ? 'bg-[#E11D48] text-white shadow-md'
+                    ? 'bg-[#1E4638] text-white shadow-md'
                     : 'text-gray-500 hover:bg-[#C5A059]/15'
                 }`}
               >
@@ -91,7 +114,7 @@ export default function WeddingCard({
                 onClick={() => onUpdateField('ceremonyType', 'thanh-hon')}
                 className={`ctog-btn px-4.5 py-1.5 rounded-full text-xs font-semibold select-none transition-all ${
                   invite.ceremonyType === 'thanh-hon'
-                    ? 'bg-[#E11D48] text-white shadow-md'
+                    ? 'bg-[#1E4638] text-white shadow-md'
                     : 'text-gray-500 hover:bg-[#C5A059]/15'
                 }`}
               >
@@ -107,7 +130,7 @@ export default function WeddingCard({
         </p>
 
         {/* Groom & Bride primary names display */}
-        <div className="couple-names font-garamond text-3xl md:text-4xl font-extrabold text-[#E11D48] leading-tight select-none">
+        <div className="couple-names font-garamond text-3xl md:text-4xl font-extrabold text-[#1E4638] leading-tight select-none">
           <div className="relative inline-block group">
             {isOrganizer ? (
               <input
@@ -176,7 +199,7 @@ export default function WeddingCard({
         </div>
 
         {/* MAP LOCATION & GOOGLE EMBEDDING DETAILS */}
-        <div className="location-wrapper my-7 flex flex-col items-center bg-[#FFF1F2] border border-[#E5E1D8] p-5 rounded-2xl">
+        <div className="location-wrapper my-7 flex flex-col items-center bg-[#F0F7F4] border border-[#E5E1D8] p-5 rounded-2xl">
           <div className="flex w-full justify-between items-center mb-1">
             <p className="location-title font-sans text-[10px] md:text-xs font-bold tracking-[1.5px] uppercase text-[#7A6F5D]">
               📍 VỊ TRÍ ĐƯỢC TỔ CHỨC
@@ -184,13 +207,13 @@ export default function WeddingCard({
             {isOrganizer && (
               <button
                 onClick={onOpenMapModal}
-                className="text-xs text-[#E11D48] hover:text-[#BE123C] font-bold flex items-center gap-1 bg-[#E11D48]/5 px-2.5 py-1 rounded-lg"
+                className="text-xs text-[#1E4638] hover:text-[#122C23] font-bold flex items-center gap-1 bg-[#1E4638]/5 px-2.5 py-1 rounded-lg"
               >
                 <Edit2 className="w-3 h-3" /> Cấu hình bản đồ
               </button>
             )}
           </div>
-          <p className="location-main font-garamond text-xl md:text-2xl font-bold text-[#E11D48] tracking-wider mb-1.5">
+          <p className="location-main font-garamond text-xl md:text-2xl font-bold text-[#1E4638] tracking-wider mb-1.5">
             NHÀ CÔ DÂU
           </p>
           <p className="location-detail text-sm font-medium text-gray-800 leading-relaxed px-1">
@@ -216,7 +239,7 @@ export default function WeddingCard({
               href={invite.mapDirectionLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="map-link-btn inline-block bg-[#E11D48] hover:bg-[#BE123C] text-white text-[11px] font-bold tracking-wider uppercase px-6 py-2.5 rounded-full shadow-md transition-transform transform hover:-translate-y-0.5 mt-3 duration-200"
+              className="map-link-btn inline-block bg-[#1E4638] hover:bg-[#122C23] text-white text-[11px] font-bold tracking-wider uppercase px-6 py-2.5 rounded-full shadow-md transition-transform transform hover:-translate-y-0.5 mt-3 duration-200"
             >
               Mở bản đồ chỉ đường
             </a>
@@ -226,14 +249,14 @@ export default function WeddingCard({
         {/* WEDDING EVENTS TIMELINE FLOW */}
         <div id="event-manager-wrapper" className="my-6">
           {isOrganizer && (
-            <div className="event-manager bg-[#FFF1F2] border border-[#E5E1D8] rounded-2xl p-4.5 mb-5 shadow-sm text-left">
+            <div className="event-manager bg-[#F0F7F4] border border-[#E5E1D8] rounded-2xl p-4.5 mb-5 shadow-sm text-left">
               <div className="event-manager-header flex justify-between items-center border-b border-dashed border-[#C5A059] pb-2.5 mb-3.5">
-                <span className="event-manager-title text-xs font-bold text-[#E11D48] tracking-widest uppercase">
+                <span className="event-manager-title text-xs font-bold text-[#1E4638] tracking-widest uppercase">
                   📋 QUẢN LÝ CÁC BỮA & LỄ CỦA THIỆP
                 </span>
                 <button
                   onClick={() => onOpenEventModal(null)}
-                  className="btn-add-evt bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 tracking-wide shadow transition-transform hover:-translate-y-0.5"
+                  className="btn-add-evt bg-[#1E4638] hover:bg-[#122C23] text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 tracking-wide shadow transition-transform hover:-translate-y-0.5"
                 >
                   <Plus className="w-3.5 h-3.5" /> Thêm bữa lễ
                 </button>
@@ -249,9 +272,9 @@ export default function WeddingCard({
                     }`}
                   >
                     <div className="event-admin-info truncate min-w-0 pr-2">
-                       <span className="event-admin-name text-sm font-bold text-[#E11D48] font-garamond block truncate">
+                       <span className="event-admin-name text-sm font-bold text-[#1E4638] font-garamond block truncate">
                         {evt.name}
-                      </span>
+                       </span>
                       <span className="event-admin-meta text-[11px] text-gray-400 block truncate">
                         {evt.time} — {evt.date}
                       </span>
@@ -297,8 +320,8 @@ export default function WeddingCard({
                 .map((evt, idx) => (
                   <div key={evt.id} className="relative animate-in fade-in duration-300">
                     {idx > 0 && <div className="event-divider w-4/5 h-[1px] bg-gradient-to-r from-transparent via-[#C5A059] to-transparent my-4 mx-auto" />}
-                    <div className="event-item p-5 bg-[#FFF1F2] border border-[#E5E1D8] rounded-2xl hover:scale-[1.012] hover:shadow-md transition-all duration-300">
-                      <div className="event-name font-garamond text-xl font-bold text-[#E11D48] tracking-wide mb-1 flex items-center gap-1.5">
+                    <div className="event-item p-5 bg-[#F0F7F4] border border-[#E5E1D8] rounded-2xl hover:scale-[1.012] hover:shadow-md transition-all duration-300">
+                      <div className="event-name font-garamond text-xl font-bold text-[#1E4638] tracking-wide mb-1 flex items-center gap-1.5">
                         <Heart className="w-4 h-4 text-[#C5A059] fill-[#C5A059]" />
                         {evt.name}
                       </div>
@@ -344,11 +367,11 @@ export default function WeddingCard({
                 value={invite.groomParents}
                 onChange={(e) => onUpdateField('groomParents', e.target.value)}
                 rows={2}
-                className="w-full text-sm font-bold text-[#E11D48] font-garamond leading-snug bg-transparent border-b border-transparent focus:border-[#C5A059] outline-none"
+                className="w-full text-sm font-bold text-[#1E4638] font-garamond leading-snug bg-transparent border-b border-transparent focus:border-[#C5A059] outline-none"
                 placeholder="Tên bố mẹ chú rể..."
               />
             ) : (
-              <p className="parents-names text-base font-bold text-[#E11D48] font-garamond leading-snug whitespace-pre-line">
+              <p className="parents-names text-base font-bold text-[#1E4638] font-garamond leading-snug whitespace-pre-line">
                 {invite.groomParents}
               </p>
             )}
@@ -366,11 +389,11 @@ export default function WeddingCard({
                 value={invite.brideParents}
                 onChange={(e) => onUpdateField('brideParents', e.target.value)}
                 rows={2}
-                className="w-full text-sm font-bold text-[#E11D48] font-garamond leading-snug bg-transparent border-b border-transparent focus:border-[#C5A059] outline-none text-right"
+                className="w-full text-sm font-bold text-[#1E4638] font-garamond leading-snug bg-transparent border-b border-transparent focus:border-[#C5A059] outline-none text-right"
                 placeholder="Tên bố mẹ cô dâu..."
               />
             ) : (
-              <p className="parents-names text-base font-bold text-[#E11D48] font-garamond leading-snug whitespace-pre-line text-right">
+              <p className="parents-names text-base font-bold text-[#1E4638] font-garamond leading-snug whitespace-pre-line text-right">
                 {invite.brideParents}
               </p>
             )}

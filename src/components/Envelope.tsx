@@ -12,6 +12,8 @@ interface EnvelopeProps {
   groomShort?: string;
   brideShort?: string;
   onOpen: () => void;
+  isOrganizer?: boolean;
+  onUpdateGuestName?: (name: string) => void;
 }
 
 export default function Envelope({
@@ -21,16 +23,29 @@ export default function Envelope({
   groomShort,
   brideShort,
   onOpen,
+  isOrganizer,
+  onUpdateGuestName,
 }: EnvelopeProps) {
   const [isOpened, setIsOpened] = useState(false);
   const [isBroken, setIsBroken] = useState(false);
 
-  // Compute initials and short names for synchronization
-  const groomWord = groomShort || groom.trim().split(' ').pop() || 'Nhật';
-  const brideWord = brideShort || bride.trim().split(' ').pop() || 'Trinh';
+  // Helper to extract last 2 words of a name (middle name + first name)
+  const getTwoWords = (name: string, fallback: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return parts.slice(-2).join(' ');
+    }
+    return parts.pop() || fallback;
+  };
+
+  const groomWord = groomShort || getTwoWords(groom, 'Văn Nhật');
+  const brideWord = brideShort || getTwoWords(bride, 'Kiều Trinh');
   const displayGuest = guestName.trim() || 'Khách Quý';
 
-  const initials = `${groomWord.charAt(0)} & ${brideWord.charAt(0)}`.toUpperCase();
+  // Extract the classic initials of actual first names (Nhật & Trinh => N & T)
+  const groomFirstChar = (groom.trim().split(/\s+/).pop() || 'N').charAt(0);
+  const brideFirstChar = (bride.trim().split(/\s+/).pop() || 'T').charAt(0);
+  const initials = `${groomFirstChar} & ${brideFirstChar}`.toUpperCase();
   const shortPair = `${groomWord} & ${brideWord}`;
 
   const handleOpen = () => {
@@ -78,7 +93,7 @@ export default function Envelope({
       }}
     >
       {/* Dynamic ambient background glow */}
-      <div className="absolute w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(225,29,72,0.15)_0%,transparent_70%)] pointer-events-none animate-pulse duration-[3000ms]" />
+      <div className="absolute w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(30,70,56,0.15)_0%,transparent_70%)] pointer-events-none animate-pulse duration-[3000ms]" />
 
       {/* Floating Sparkle Elements */}
       <div className="sparkles">
@@ -101,7 +116,7 @@ export default function Envelope({
 
           {/* Envelope Body Clip (cuts rising card) */}
           <div className="env-clip absolute inset-0 rounded-2xl overflow-hidden shadow-2xl z-10">
-            <div className="env-body absolute inset-0 bg-gradient-to-br from-[#4C0519] via-[#881337] to-[#9F1239]">
+            <div className="env-body absolute inset-0 bg-gradient-to-br from-[#0F2F25] via-[#174335] to-[#1C5241]">
               <div className="env-pattern absolute inset-0" />
               <div className="env-left-flap" />
               <div className="env-right-flap" />
@@ -114,7 +129,7 @@ export default function Envelope({
                 <p className="mini-card-title font-garamond text-[11px] italic text-[#999] tracking-wider mb-1">
                   Trân trọng kính mời
                 </p>
-                <div className="mini-card-name font-dancing text-2xl md:text-[26px] font-bold text-[#E11D48] mb-1.5 max-w-[270px] leading-tight break-words">
+                <div className="mini-card-name font-dancing text-2xl md:text-[26px] font-bold text-[#1E4638] mb-1.5 max-w-[270px] leading-tight break-words">
                   {displayGuest}
                 </div>
                 <div className="mini-couple font-garamond text-base md:text-[17px] font-bold text-gray-800 tracking-wider">
@@ -150,9 +165,22 @@ export default function Envelope({
         <p className="env-title font-garamond text-base md:text-lg italic text-[#665C4E] mb-1">
           Trân trọng kính mời
         </p>
-        <div className="env-guest-name font-dancing text-3xl md:text-4xl font-bold text-[#E11D48] leading-snug drop-shadow-sm px-4">
-          {displayGuest}
-        </div>
+        {isOrganizer ? (
+          <div className="flex flex-col items-center z-20 relative">
+            <input
+              type="text"
+              value={guestName}
+              onChange={(e) => onUpdateGuestName?.(e.target.value)}
+              placeholder="Nhập tên khách..."
+              className="env-guest-name font-dancing text-3xl md:text-4xl font-bold text-[#1E4638] leading-snug drop-shadow-sm text-center bg-transparent border-b border-dashed border-[#C5A059] focus:border-[#1E4638] outline-none max-w-[320px] mx-auto px-2"
+            />
+            <p className="text-[10px] text-gray-400 italic mt-1">(Bấm vào dòng kẻ để sửa trực tiếp tên khách mời)</p>
+          </div>
+        ) : (
+          <div className="env-guest-name font-dancing text-3xl md:text-4xl font-bold text-[#1E4638] leading-snug drop-shadow-sm px-4">
+            {displayGuest}
+          </div>
+        )}
       </div>
 
       <p className="tap-label font-garamond text-xs md:text-sm italic text-[#8A7A65] mt-3.5 tracking-wide animate-pulse">
