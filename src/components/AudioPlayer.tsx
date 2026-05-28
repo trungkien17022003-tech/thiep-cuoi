@@ -178,11 +178,17 @@ export default function AudioPlayer({
             URL.revokeObjectURL(localBlobUrl);
           }
         } catch (err: any) {
-          console.error('Error fetching audio blob from proxy:', err);
+          console.error('Error fetching audio blob from proxy, falling back to direct stream:', err);
           if (isMounted) {
-            setAudioError('Không thể tải nhạc từ Google Drive. Hãy đặt tệp Google Drive ở chế độ công khai "Bất kỳ ai có liên kết đều xem được" (Anyone with link can view) nhé!');
+            const idMatch = parsedUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idMatch && idMatch[1]) {
+              const directUrl = `https://docs.google.com/uc?export=download&id=${idMatch[1]}`;
+              setResolvedSrc(directUrl);
+            } else {
+              setResolvedSrc(DEFAULT_TRACK);
+              setAudioError('Không thể tải nhạc từ Google Drive. Hãy đặt tệp Google Drive ở chế độ công khai "Bất kỳ ai có liên kết đều xem được" (Anyone with link can view) nhé!');
+            }
             setAudioLoading(false);
-            setResolvedSrc(DEFAULT_TRACK);
           }
         }
       } else {

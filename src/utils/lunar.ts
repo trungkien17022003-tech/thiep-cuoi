@@ -166,8 +166,11 @@ export function cleanGoogleDriveAudioUrl(url: string): string {
       window.location.hostname === '127.0.0.1' ||
       window.location.hostname.includes('.run.app')
     );
-    const backendBase = isLocalOrPre ? '' : 'https://ais-pre-qobzc62527pna4ezkn6tr2-708016236775.asia-southeast1.run.app';
-    return `${backendBase}/api/proxy-audio?id=${fileId}`;
+    if (isLocalOrPre) {
+      return `/api/proxy-audio?id=${fileId}`;
+    } else {
+      return `https://docs.google.com/uc?export=download&id=${fileId}`;
+    }
   }
 
   // If it's some standard direct online MP3 link (not Google Drive), return it if it has an absolute protocol.
