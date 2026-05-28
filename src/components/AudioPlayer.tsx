@@ -205,7 +205,7 @@ export default function AudioPlayer({
   // Process pasting online audio URL link
   const handleSaveLink = () => {
     if (inpUrl.trim() === '') return;
-    onUpdateAudioUrl?.(cleanGoogleDriveAudioUrl(inpUrl.trim()));
+    onUpdateAudioUrl?.(inpUrl.trim());
     setIsPlaying(true);
     setInpUrl('');
   };

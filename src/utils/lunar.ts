@@ -132,26 +132,51 @@ export function cleanGoogleDriveUrl(url: string): string {
 export function cleanGoogleDriveAudioUrl(url: string): string {
   if (!url) return '';
   const trimmed = url.trim();
-  if (!trimmed.includes('drive.google.com') && !trimmed.includes('docs.google.com')) {
+  
+  // If the URL is already an IndexedDB marker or soundhelix preset, return as-is
+  if (trimmed === 'local:uploaded' || trimmed.startsWith('https://www.soundhelix.com')) {
     return trimmed;
   }
+
   let fileId = '';
-  // Match /file/d/{id}/...
-  const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (fileDMatch && fileDMatch[1]) {
-    fileId = fileDMatch[1];
-  } else {
-    // Match id={id}
+
+  // Case 1: Check if it's already a relative proxy URL from a legacy database entry
+  if (trimmed.includes('/api/proxy-audio')) {
     const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (idMatch && idMatch[1]) {
       fileId = idMatch[1];
     }
+  } else if (trimmed.includes('drive.google.com') || trimmed.includes('docs.google.com')) {
+    // Case 2: Standard Google Drive sharing URL
+    const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileDMatch && fileDMatch[1]) {
+      fileId = fileDMatch[1];
+    } else {
+      const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (idMatch && idMatch[1]) {
+        fileId = idMatch[1];
+      }
+    }
   }
 
   if (fileId) {
-    return `/api/proxy-audio?id=${fileId}`;
+    // Determine if we are running in the direct AI Studio / Cloud Run preview workspace, or on an external site like Vercel
+    const isLocalOrPre = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('.run.app')
+    );
+    const backendBase = isLocalOrPre ? '' : 'https://ais-pre-qobzc62527pna4ezkn6tr2-708016236775.asia-southeast1.run.app';
+    return `${backendBase}/api/proxy-audio?id=${fileId}`;
   }
-  return trimmed;
+
+  // If it's some standard direct online MP3 link (not Google Drive), return it if it has an absolute protocol.
+  // This filters out loose text inputs (like "Fix lỗi link...") so they don't resolve to broken relative URLs.
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+
+  return '';
 }
 
 

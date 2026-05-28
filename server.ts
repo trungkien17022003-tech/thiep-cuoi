@@ -9,6 +9,13 @@ async function startServer() {
 
   // API Route: Proxy Google Drive Audio Streams securely
   // This bypasses CORS blocks, iframe constraints, third-party cookie restrictions, and virus scan screens.
+  app.options('/api/proxy-audio', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
+    res.sendStatus(204);
+  });
+
   app.get('/api/proxy-audio', async (req, res) => {
     const fileId = req.query.id as string;
     if (!fileId) {
@@ -87,6 +94,8 @@ async function startServer() {
       res.setHeader('Content-Type', contentType);
       res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
 
       if (contentLength) {
         res.setHeader('Content-Length', contentLength);
